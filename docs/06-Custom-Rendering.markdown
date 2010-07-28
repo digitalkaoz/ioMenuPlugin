@@ -29,8 +29,8 @@ ways:
     $renderer = new myCustomRenderer();
     // first way is to call render method of renderer
     echo $renderer->render($menu);
-    // second way is to change default renderer
-    ioMenuItem::setDefaultRenderer($renderer);
+    // second way is to change renderer property
+    $menu->getTree()->setRenderer($renderer);
     // now every call will render with custom renderer
     echo $menu->render();
     echo $menu;
