@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../bootstrap/functional.php';
 require_once $_SERVER['SYMFONY'].'/vendor/lime/lime.php';
 require_once sfConfig::get('sf_lib_dir').'/test/unitHelper.php';
 
-$t = new lime_test(251);
+$t = new lime_test(258);
 
 $timer = new sfTimer();
 // stub class used for testing
@@ -804,6 +804,30 @@ extract(create_test_tree($t, 'ioMenuItemTest'));
 
     $t->is($primary->render(), '<ul class="menu"><li class="first">c1<ul class="menu_level_1"><li class="first">gc1</li><li class="last">gc2</li></ul></li><li class="last">c2</li></ul>', 'proper rendering of primary after slice');
     $t->is($secondary->render(), '<ul class="menu"><li class="first">c3</li><li class="last">c4</li></ul>', 'proper rendering of secondary after slice');
+
+$t->info('13 - Test menu tree property');
+    $menu = new ioMenuItem('root');
+    $menu->addChild('c1');
+    $menu['c1']->addChild('gc1');
+    $menu['c1']->addChild('gc2');
+    $menu->addChild('c2');
+    $menu->addChild('c3');
+    $menu->addChild('c4');
+
+    $c1 = $menu['c1'];
+    $t->ok($menu->getTree() === $c1->getTree(), 'root and c1 has same tree');
+
+    $menu->removeChild($c1);
+    $t->ok($menu->getTree() !== $c1->getTree(), 'root and c1 has different tree');
+    $t->ok($menu->getTree()->getRootItem() === $menu, 'root->getTree()->getRootItem() returns root');
+    $t->ok($c1['gc1']->getTree()->getRootItem() === $c1, 'c1[gc1]->getTree()->getRootItem() returns c1');
+
+    $menu->addChild($c1);
+    $t->ok($menu->getTree() === $c1->getTree(), 'root and c1 has same tree');
+    $t->ok($c1['gc1']->getTree()->getRootItem() === $menu, 'c1[gc1]->getTree()->getRootItem() returns root');
+
+    extract($menu->split(2));
+    $t->ok($primary['c2']->getTree() !== $secondary['c1']->getTree(), 'primary->c2 and secondary->c1 have two distinct trees');
 
 // used for benchmarking
 $timer->addTime();

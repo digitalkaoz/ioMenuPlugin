@@ -28,6 +28,7 @@ class ioMenuItem extends ioTreeItem
    * Properties on this menu item
    */
   protected
+    $_tree             = null,    // menu tree which this item belongs to
     $_label            = null,    // the label to output, name is used by default
     $_route            = null,    // the route or url to use in the anchor tag
     $_attributes       = array(), // an array of attributes for the li
@@ -74,12 +75,41 @@ class ioMenuItem extends ioTreeItem
 
     sfApplicationConfiguration::getActive()->loadHelpers(array('Tag', 'Url'));
 
+    $this->_tree = new ioMenuTree($this);
     $this->_route = $route;
     $this->_attributes = $attributes;
     if (self::$_renderer == null)
     {
       self::$_renderer = new ioMenuItemListRenderer();
     }
+  }
+
+  /**
+   * Sets new menu tree.
+   *
+   * @param ioMenu $tree menu tree
+   * @param boolean $recursive whether to change menu tree in childs
+   */
+  protected function setTree(ioMenuTree $tree, $recursive = false)
+  {
+    $this->_tree = $tree;
+    if ($recursive)
+    {
+      foreach($this->getChildren() as $child)
+      {
+        $child->setTree($tree, true);
+      }
+    }
+  }
+
+  /**
+   * Returns menu tree
+   *
+   * @return ioMenuTree menu tree
+   */
+  public function getTree()
+  {
+    return $this->_tree;
   }
 
   /**
@@ -451,9 +481,42 @@ class ioMenuItem extends ioTreeItem
 
     parent::appendChild($child);
 
+    $child->setTree($this->getTree(), true);
+
     $child->setCurrentUri($this->getCurrentUri());
 
     return $child;
+  }
+
+  /**
+   * Removes a child from this menu item
+   *
+   * @param mixed $name The name of ioMenuItem instance to remove
+   */
+  public function removeChild($name)
+  {
+    $item = ($name instanceof ioMenuItem) ? $name : $this->getChild($name);
+
+    parent::removeChild($item);
+
+    if ($item)
+    {
+      $item->setTree($this->getTree()->copy($item), true);
+    }
+  }
+
+  /**
+   * Split menu tree into two distinct trees.
+   *
+   * @param mixed $length Name of child, child object, or numeric length.
+   * @return array Array with two trees, with "primary" and "secondary" key
+   */
+  public function split($length)
+  {
+    $ret = parent::split($length);
+    $ret['secondary']->setTree($this->getTree()->copy($ret['secondary']), true);
+
+    return $ret;
   }
 
   /**
