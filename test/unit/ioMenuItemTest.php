@@ -614,10 +614,9 @@ $t->info('8 - Test the render() method.');
   $t->is($menu->render(2), $rendered, 'Displays ch4 and not gc1 because depth = 2. Hides ch1-3 because showChildren() is false on pt1.');
 
   $t->info('  8.8 - Test custom renderer');
-  ioMenuItem::setRenderer(new ioMenuItemTestRenderer());
+  $menu->getTree()->setRenderer(new ioMenuItemTestRenderer());
   $t->is($menu->render(), "Test renderer", 'The full menu renders correctly.');
   $t->is((string) $menu, "Test renderer", 'The __toString() method renders correctly.');
-  ioMenuItem::setRenderer(new ioMenuItemListRenderer());
 
 $t->info('9 - Test i18n functionaliy.');
   $menu = new ioMenuItem('i18n');

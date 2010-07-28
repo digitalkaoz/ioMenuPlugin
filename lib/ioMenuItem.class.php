@@ -20,11 +20,6 @@ class ioMenuItem extends ioTreeItem
   public static $renderCompressed = false;
 
   /**
-   * Renderer which is used to render menu items.
-   */
-  protected static $_renderer = null;
-
-  /**
    * Properties on this menu item
    */
   protected
@@ -78,10 +73,6 @@ class ioMenuItem extends ioTreeItem
     $this->_tree = new ioMenuTree($this);
     $this->_route = $route;
     $this->_attributes = $attributes;
-    if (self::$_renderer == null)
-    {
-      self::$_renderer = new ioMenuItemListRenderer();
-    }
   }
 
   /**
@@ -112,25 +103,6 @@ class ioMenuItem extends ioTreeItem
     return $this->_tree;
   }
 
-  /**
-   * Sets renderer which will be used to render menu items.
-   *
-   * @param ioMenuItemRenderer $renderer Renderer.
-   */
-  static public function setRenderer(ioMenuItemRenderer $renderer)
-  {
-    self::$_renderer = $renderer;
-  }
-
-  /**
-   * Gets renderer which is used to render menu items.
-   *
-   * @return ioMenuItemRenderer $renderer Renderer.
-   */
-  static public function getRenderer()
-  {
-    return self::$_renderer;
-  }
 
   /**
    * Generates the url to this menu item based on the route
@@ -666,7 +638,7 @@ class ioMenuItem extends ioTreeItem
    */
   public function render($depth = null)
   {
-    return self::getRenderer()->render($this, $depth);
+    return $this->getTree()->getRenderer()->render($this, $depth);
   }
 
   /**

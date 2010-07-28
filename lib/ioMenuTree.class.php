@@ -18,6 +18,12 @@ class ioMenuTree
   protected $_rootItem = null;
 
   /**
+   * Properties of menu tree
+   */
+  protected
+    $_renderer         = null;    // renderer which is used to render menu items
+
+  /**
    * Creates new menu tree for menu item
    * @param ioMenuItem $item
    */
@@ -47,5 +53,31 @@ class ioMenuTree
   {
     return $this->_rootItem;
   }
+
+  /**
+   * Sets renderer which will be used to render menu items.
+   *
+   * @param ioMenuItemRenderer $renderer Renderer.
+   */
+  public function setRenderer(ioMenuItemRenderer $renderer)
+  {
+    $this->_renderer = $renderer;
+  }
+
+  /**
+   * Gets renderer which is used to render menu items.
+   *
+   * @return ioMenuItemRenderer $renderer Renderer.
+   */
+  public function getRenderer()
+  {
+    if ($this->_renderer == null) // creates default renderer
+    {
+      $this->_renderer = new ioMenuItemListRenderer();
+    }
+
+    return $this->_renderer;
+  }
+
 }
 
