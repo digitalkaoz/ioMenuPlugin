@@ -52,8 +52,7 @@ class ioMenuItem extends ioTreeItem
    */
   protected
     $_isCurrent        = null,    // whether or not this menu item is current
-    $_userAccess       = null,    // whether or not the current user can access this item
-    $_currentUri       = null;    // the current uri to use for selecting current menu
+    $_userAccess       = null;    // whether or not the current user can access this item
 
   /**
    * Class constructor
@@ -455,8 +454,6 @@ class ioMenuItem extends ioTreeItem
 
     $child->setTree($this->getTree(), true);
 
-    $child->setCurrentUri($this->getCurrentUri());
-
     return $child;
   }
 
@@ -812,7 +809,7 @@ class ioMenuItem extends ioTreeItem
 
     if ($this->_isCurrent === null)
     {
-      $url = $this->getCurrentUri();
+      $url = $this->getTree()->getCurrentUri();
       $menuUrl = $this->getUri(array('absolute' => true));
 
       // a very dirty hack so homepages will match with or without the trailing slash
@@ -921,69 +918,6 @@ class ioMenuItem extends ioTreeItem
     }
 
     return false;
-  }
-
-  /**
-   * Returns the current uri, which is used for determining the current
-   * menu item.
-   *
-   * If the uri isn't set, this asks the parent menu for its current uri.
-   * This would recurse up the tree until the root is hit. Once the root
-   * is hit, if it still doesn't know the currentUri, it gets it from the
-   * request object.
-   *
-   * @return string
-   */
-  public function getCurrentUri()
-  {
-    if ($this->_currentUri === null)
-    {
-      if ($this->getParent() && ($currentUri = $this->getParent()->getCurrentUri()))
-      {
-        /**
-         * This should look strange. But, if we ask our parent for the
-         * current uri, and it returns it successfully, then one of two
-         * different things just happened:
-         * 
-         *   1) The parent already had the currentUri calculated, but it
-         *      hadn't been passed down to the child yet. This technically
-         *      should not happen, but we allow for the possibility. In
-         *      that case, _currentUri is still blank and we set it here.
-         *   2) The parent did not have the currentUri calculated, and upon
-         *      calculating it, it set it on itself and all of its children.
-         *      In that case, this menu item and all of its children will
-         *      now have the currentUri just by asking the parent.
-         */
-        if ($this->_currentUri === null)
-        {
-          $this->setCurrentUri($currentUri);
-        }
-      }
-      else
-      {
-        $this->setCurrentUri(sfContext::getInstance()->getRequest()->getUri());
-      }
-    }
-
-    return $this->_currentUri;
-  }
-
-  /**
-   * Sets the current uri, used when determining the current menu item
-   *
-   * This will set the current uri on the root menu item, which all other
-   * menu items will use
-   *
-   * @return void
-   */
-  public function setCurrentUri($uri)
-  {
-    $this->_currentUri = $uri;
-
-    foreach ($this->getChildren() as $child)
-    {
-      $child->setCurrentUri($uri);
-    }
   }
 
   /**

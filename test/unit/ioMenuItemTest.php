@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../bootstrap/functional.php';
 require_once $_SERVER['SYMFONY'].'/vendor/lime/lime.php';
 require_once sfConfig::get('sf_lib_dir').'/test/unitHelper.php';
 
-$t = new lime_test(258);
+$t = new lime_test(255);
 
 $timer = new sfTimer();
 // stub class used for testing
@@ -322,16 +322,13 @@ $t->info('5 - Check the "current" behavior.');
   $currentMenu->addChild('child', 'http://www.symfony-project.org');
 
   $t->info('  5.1 - Test the setting of the current uri.');
-  $currentMenu->setCurrentUri('http://www.symfony-project.org');
-  $t->is($currentMenu->getCurrentUri(), 'http://www.symfony-project.org', '->setCurrentUri() sets the current uri correctly.');
-  $t->is($currentMenu['child']->getCurrentUri(), 'http://www.symfony-project.org', '->getCurrentUri() on the child was also set.');
+  $currentMenu->getTree()->setCurrentUri('http://www.symfony-project.org');
+  $t->is($currentMenu->getTree()->getCurrentUri(), 'http://www.symfony-project.org', '->setCurrentUri() sets the current uri correctly.');
 
-  $currentMenu->setCurrentUri('http://www.sympalphp.org');
-  $t->is($currentMenu->getCurrentUri(), 'http://www.sympalphp.org', '->setCurrentUri() sets the current uri correctly a second time.');
-  $t->is($currentMenu['child']->getCurrentUri(), 'http://www.sympalphp.org', '->getCurrentUri() on the child was set for a second time.');
+  $currentMenu->getTree()->setCurrentUri('http://www.sympalphp.org');
+  $t->is($currentMenu->getTree()->getCurrentUri(), 'http://www.sympalphp.org', '->setCurrentUri() sets the current uri correctly a second time.');
 
   $currentMenu['child']->addChild('grandchild', 'http://www.doctrine-project.org');
-  $t->is($currentMenu['child']['grandchild']->getCurrentUri(), 'http://www.sympalphp.org', 'The current uri is passed to any new child objects.');
 
   $t->info('  5.2 - Test the isCurrent() and isCurrentAncestor() methods.');
   $t->is($currentMenu->isCurrent(), false, '->isCurrent() returns false, the route is not even set on that menu item.');
@@ -342,7 +339,7 @@ $t->info('5 - Check the "current" behavior.');
   $t->is($currentMenu->isCurrent(), true, '->isCurrent() returns true, the current uri matches the uri of the menu item.');
 
   $t->info('    b) Test isCurrent() on the second level.');
-  $currentMenu->setCurrentUri('http://www.symfony-project.org');
+  $currentMenu->getTree()->setCurrentUri('http://www.symfony-project.org');
   $currentMenu->resetIsCurrent(); // force _current to be recalculated
   $currentMenu['child']->resetIsCurrent();
   $t->is($currentMenu->isCurrent(), false, '->isCurrent() on the root returns false, no longer matches the current uri.');
@@ -351,7 +348,7 @@ $t->info('5 - Check the "current" behavior.');
   $t->is($currentMenu['child']->isCurrentAncestor(), false, '->isCurrentAncestor() returns false when called in the current menu item itself.');
 
   $t->info('    c) Test isCurrent() on the third level.');
-  $currentMenu->setCurrentUri('http://www.doctrine-project.org');
+  $currentMenu->getTree()->setCurrentUri('http://www.doctrine-project.org');
   $currentMenu->resetIsCurrent(); // force _current to be recalculated
   $currentMenu['child']->resetIsCurrent();
   $currentMenu['child']['grandchild']->resetIsCurrent();

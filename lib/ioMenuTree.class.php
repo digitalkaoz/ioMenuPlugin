@@ -21,7 +21,8 @@ class ioMenuTree
    * Properties of menu tree
    */
   protected
-    $_renderer         = null;    // renderer which is used to render menu items
+    $_renderer         = null,    // renderer which is used to render menu items
+    $_currentUri       = null;    // the current uri to use for selecting current menu
 
   /**
    * Creates new menu tree for menu item
@@ -79,5 +80,32 @@ class ioMenuTree
     return $this->_renderer;
   }
 
+  /**
+   * Returns the current uri, which is used for determining the current
+   * menu item.
+   *
+   * If the uri isn't set, its taken it from the request object.
+   *
+   * @return string
+   */
+  public function getCurrentUri()
+  {
+    if ($this->_currentUri === null)
+    {
+        $this->setCurrentUri(sfContext::getInstance()->getRequest()->getUri());
+    }
+
+    return $this->_currentUri;
+  }
+
+  /**
+   * Sets the current uri, used when determining the current menu item
+   *
+   * @return void
+   */
+  public function setCurrentUri($uri)
+  {
+    $this->_currentUri = $uri;
+  }
 }
 
