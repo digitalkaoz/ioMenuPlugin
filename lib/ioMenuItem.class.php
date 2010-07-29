@@ -767,7 +767,7 @@ class ioMenuItem implements ArrayAccess, Countable, IteratorAggregate
    */
   public function __toString()
   {
-    return $this->render();
+    return (string) $this->render();
   }
 
   /**
