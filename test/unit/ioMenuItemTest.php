@@ -10,11 +10,6 @@ $timer = new sfTimer();
 // stub class used for testing
 class ioMenuItemTest extends ioMenuItem
 {
-  // resets the isCurrent property so we can test for current repeatedly.
-  public function resetIsCurrent()
-  {
-    $this->_isCurrent = null;
-  }
   // resets the userAccess property so we can test for current repeatedly.
   public function resetUserAccess()
   {
@@ -335,13 +330,12 @@ $t->info('5 - Check the "current" behavior.');
 
   $t->info('    a) Test isCurrent() on the top level.');
   $currentMenu->setRoute('http://www.sympalphp.org');
-  $currentMenu->resetIsCurrent(); // force _current to be recalculated
+  $currentMenu->getTree()->setCurrentItem(null);
   $t->is($currentMenu->isCurrent(), true, '->isCurrent() returns true, the current uri matches the uri of the menu item.');
 
   $t->info('    b) Test isCurrent() on the second level.');
   $currentMenu->getTree()->setCurrentUri('http://www.symfony-project.org');
-  $currentMenu->resetIsCurrent(); // force _current to be recalculated
-  $currentMenu['child']->resetIsCurrent();
+  $currentMenu->getTree()->setCurrentItem(null);
   $t->is($currentMenu->isCurrent(), false, '->isCurrent() on the root returns false, no longer matches the current uri.');
   $t->is($currentMenu['child']->isCurrent(), true, '->isCurrent() properly returns true on the child menu item.');
   $t->is($currentMenu->isCurrentAncestor(), true, '->isCurrentAncestor() returns true since its child is current.');
@@ -349,9 +343,7 @@ $t->info('5 - Check the "current" behavior.');
 
   $t->info('    c) Test isCurrent() on the third level.');
   $currentMenu->getTree()->setCurrentUri('http://www.doctrine-project.org');
-  $currentMenu->resetIsCurrent(); // force _current to be recalculated
-  $currentMenu['child']->resetIsCurrent();
-  $currentMenu['child']['grandchild']->resetIsCurrent();
+  $currentMenu->getTree()->setCurrentItem(null);
   $t->is($currentMenu['child']->isCurrent(), false, '->isCurrent() on the child returns false, no longer matches the current uri.');
   $t->is($currentMenu['child']['grandchild']->isCurrent(), true, '->isCurrent() properly returns true on the grandchild menu item.');
   $t->is($currentMenu->isCurrentAncestor(), true, '->isCurrentAncestor() returns true on the root since its grandchild is current.');
@@ -561,7 +553,7 @@ $t->info('8 - Test the render() method.');
   $t->is($menu->render(), $rendered, 'The menu renders with the title and class attributes.');
 
   $t->info('  8.3 - Set ch2 menu as current, look for "current" and "current_ancestor" classes.');
-  $ch2->isCurrent(true);
+  $ch2->getTree()->setCurrentItem($ch2);
   $rendered = '<ul class="root"><li class="current_ancestor first">Parent 1<ul class="menu_level_1"><li class="first">Child 1</li><li class="current">Child 2</li><li class="last">Child 3</li></ul></li><li class="parent2_class last" title="parent2 title">Parent 2<ul class="menu_level_1"><li class="first last">Child 4<ul class="menu_level_2"><li class="first last">Grandchild 1</li></ul></li></ul></li></ul>';
   $t->is($menu->render(), $rendered, 'The menu renders with the current and current_ancestor classes.');
 

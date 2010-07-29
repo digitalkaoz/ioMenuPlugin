@@ -51,7 +51,6 @@ class ioMenuItem extends ioTreeItem
    * Metadata on this menu item
    */
   protected
-    $_isCurrent        = null,    // whether or not this menu item is current
     $_userAccess       = null;    // whether or not the current user can access this item
 
   /**
@@ -770,58 +769,13 @@ class ioMenuItem extends ioTreeItem
   }
 
   /**
-   * Returns the current menu item if it is a child of this menu item
-   *
-   * @return bool|ioMenuItem
-   */
-  public function getCurrent()
-  {
-    if ($this->isCurrent())
-    {
-      return $this;
-    }
-
-    foreach ($this->_children as $child)
-    {
-      if ($current = $child->getCurrent())
-      {
-        return $current;
-      }
-    }
-
-    return false;
-  }
-
-  /**
    * Returns whether or not this menu item is "current"
    *
-   * By passing an argument, you can set this menu item as current or not.
-   *
-   * @param boolean $bool Optionally specify that this menu item is current
    * @return boolean
    */
-  public function isCurrent($bool = null)
+  public function isCurrent()
   {
-    if ($bool !== null)
-    {
-      $this->_isCurrent = $bool;
-    }
-
-    if ($this->_isCurrent === null)
-    {
-      $url = $this->getTree()->getCurrentUri();
-      $menuUrl = $this->getUri(array('absolute' => true));
-
-      // a very dirty hack so homepages will match with or without the trailing slash
-      if ($this->getRoute() == '@homepage' && substr($url, -1) != '/')
-      {
-        $menuUrl = substr($menuUrl, 0, strlen($menuUrl) - 1);
-      }
-
-      $this->_isCurrent = ($menuUrl == $url);
-    }
-
-    return $this->_isCurrent;
+      return $this === $this->getTree()->getCurrentItem();
   }
 
   /**
