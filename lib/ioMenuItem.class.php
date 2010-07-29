@@ -35,8 +35,7 @@ class ioMenuItem extends ioTreeItem
    * Special i18n properties
    */
   protected
-    $_i18nLabels       = array(), // an array of labels for different cultures
-    $_culture          = null;    // the culture to use when rendering this menu
+    $_i18nLabels       = array(); // an array of labels for different cultures
 
   /**
    * Options related to rendering
@@ -186,9 +185,9 @@ class ioMenuItem extends ioTreeItem
      *  a) we're using i18n on this menu and
      *  b) we're either passed a culture or can retrieve it from the context
      */
-    if ($this->useI18n() && ($culture !== null || $this->getCulture()))
+    if ($this->useI18n() && ($culture !== null || $this->getTree()->getCulture()))
     {
-      $culture = ($culture === null) ? $this->getCulture() : $culture;
+      $culture = ($culture === null) ? $this->getTree()->getCulture() : $culture;
 
       // try to return that exact culture
       if (isset($this->_i18nLabels[$culture]))
@@ -235,51 +234,6 @@ class ioMenuItem extends ioTreeItem
   public function useI18n()
   {
     return (count($this->_i18nLabels) > 0);
-  }
-
-  /**
-   * Returns the culture with which this menu item should render.
-   *
-   * If the culture has not been set, it asks its parent menu item for
-   * a culture. If this is the root, it will attempt to ask sfContext
-   * for a culture. If all else fails, the default culture is returned.
-   *
-   * @return string
-   */
-  public function getCulture()
-  {
-    // if the culture is set, simply return it
-    if ($this->_culture !== null)
-    {
-      return $this->_culture;
-    }
-
-    // if we have a parent, just as the parent
-    if ($this->getParent())
-    {
-      return $this->getParent()->getCulture();
-    }
-    
-    // if we're the root, get from the context or return the default
-    if (sfContext::hasInstance())
-    {
-      return sfContext::getInstance()->getUser()->getCulture();
-    }
-    else
-    {
-      return sfConfig::get('sf_default_culture');
-    }
-  }
-
-  /**
-   * Set the culture that should be used when rendering the menu
-   *
-   * @param  string $culture The culture to use when rendering the menu
-   * @return void
-   */
-  public function setCulture($culture)
-  {
-    $this->_culture = $culture;
   }
 
   /**

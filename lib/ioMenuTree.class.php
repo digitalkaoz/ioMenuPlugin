@@ -23,7 +23,8 @@ class ioMenuTree
   protected
     $_renderer            = null,    // renderer which is used to render menu items
     $_currentUri          = null,    // the current uri to use for selecting current menu
-    $_currentItem         = null;    // current item
+    $_currentItem         = null,    // current item
+    $_culture             = null;    // the culture to use when rendering menu tree
 
   /**
    * Creates new menu tree for menu item
@@ -170,6 +171,44 @@ class ioMenuTree
     }
 
     return null;
+  }
+
+  /**
+   * Returns the culture with which this menu tree should render.
+   *
+   * If the culture has not been set, it will attempt to ask sfContext
+   * for a culture. If all else fails, the default culture is returned.
+   *
+   * @return string
+   */
+  public function getCulture()
+  {
+    // if the culture is set, simply return it
+    if ($this->_culture !== null)
+    {
+      return $this->_culture;
+    }
+
+    // get it from the context or return the default
+    if (sfContext::hasInstance())
+    {
+      return sfContext::getInstance()->getUser()->getCulture();
+    }
+    else
+    {
+      return sfConfig::get('sf_default_culture');
+    }
+  }
+
+  /**
+   * Set the culture that should be used when rendering the menu tree
+   *
+   * @param  string $culture The culture to use when rendering the menu tree
+   * @return void
+   */
+  public function setCulture($culture)
+  {
+    $this->_culture = $culture;
   }
 }
 

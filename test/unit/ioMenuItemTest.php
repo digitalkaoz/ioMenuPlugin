@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../bootstrap/functional.php';
 require_once $_SERVER['SYMFONY'].'/vendor/lime/lime.php';
 require_once sfConfig::get('sf_lib_dir').'/test/unitHelper.php';
 
-$t = new lime_test(255);
+$t = new lime_test(254);
 
 $timer = new sfTimer();
 // stub class used for testing
@@ -613,12 +613,11 @@ $t->info('9 - Test i18n functionaliy.');
 
   $t->info('  9.1 - Test the setCulture() and getCulture() methods');
     $context->getUser()->setCulture('es');
-    $t->is($menu->getCulture(), 'es', '->getCulture() returns the user default culture if none is set.');
-    $menu->setCulture('klingon');
-    $t->is($menu->getCulture(), 'klingon', '->getCulture() returns the culture that was explicitly set.');
-    $t->is($menu['admin']->getCulture(), 'klingon', '->getCulture() returns the parent menu items culture if not set.');
-    $menu['admin']->setCulture('mars');
-    $t->is($menu['admin']->getCulture(), 'mars', '->getCulture() returns the set culture, not the parent\'s culture.');
+    $t->is($menu->getTree()->getCulture(), 'es', '->getCulture() returns the user default culture if none is set.');
+    $menu->getTree()->setCulture('klingon');
+    $t->is($menu->getTree()->getCulture(), 'klingon', '->getCulture() returns the culture that was explicitly set.');
+    $menu['admin']->getTree()->setCulture('mars');
+    $t->is($menu['admin']->getTree()->getCulture(), 'mars', '->getCulture() returns the set culture, not the parent\'s culture.');
 
   $t->info('  9.2 - Test the useI18n() and get/setLabel() methods');
     $menu = new ioMenuItem('admin');
@@ -637,7 +636,7 @@ $t->info('9 - Test i18n functionaliy.');
     sfConfig::set('sf_default_culture', 'es');
     $t->is($menu->getLabel('fake'), 'administración', '->getLabel() retrieves the sf_default_culture label if the given culture does not have a label.');
 
-    $menu->setCulture('es');
+    $menu->getTree()->setCulture('es');
     $t->is($menu->getLabel(), 'administración', '->getLabel() returns the label of the culture on the label');
 
   $t->info('  9.3 - Test toArray() and fromArray()');
