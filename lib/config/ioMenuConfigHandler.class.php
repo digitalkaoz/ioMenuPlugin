@@ -157,9 +157,13 @@ class ioMenuConfigHandler extends sfYamlConfigHandler
         unset($files[$k]);
       }
     }
-
-    $config = sfSecurityConfigHandler::flattenConfigurationWithEnvironment(sfSecurityConfigHandler::getConfiguration($files));
-
+    
+    $securityConfig = sfSecurityConfigHandler::getConfiguration($files);
+    $config = sfSecurityConfigHandler::flattenConfigurationWithEnvironment($securityConfig);
+    if($route_defaults['action'] != 'index' && isset($securityConfig[$route_defaults['action']])){
+      $config['credentials'] = $securityConfig[$route_defaults['action']]['credentials'];
+    }
+    
     return $config;
   }
 
