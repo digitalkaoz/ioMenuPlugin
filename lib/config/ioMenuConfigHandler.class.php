@@ -141,9 +141,7 @@ class ioMenuConfigHandler extends sfYamlConfigHandler
   protected function getSecurityConfigForRoute(sfRoute $route)
   {
     $route_defaults = $route->getDefaults() ? $route->getDefaults() : $route->getDefaultParameters();
-    $module = $route_defaults['module'];
     $config = $this->context->getConfiguration();
-    $finder = new sfFinder();
 
     $files = array(
       $config->getRootDir().'/apps/'.$config->getApplication().'/config/security.yml',
@@ -159,12 +157,43 @@ class ioMenuConfigHandler extends sfYamlConfigHandler
     }
     
     $securityConfig = sfSecurityConfigHandler::getConfiguration($files);
-    $config = sfSecurityConfigHandler::flattenConfigurationWithEnvironment($securityConfig);
-    if($route_defaults['action'] != 'index' && isset($securityConfig[$route_defaults['action']])){
-      $config['credentials'] = $securityConfig[$route_defaults['action']]['credentials'];
-    }
+
+    $secure = $this->getSecurityValue($securityConfig, $route_defaults['action'], 'is_secure');
+    $credentials = $this->getSecurityValue($securityConfig, $route_defaults['action'], 'credentials');
     
-    return $config;
+    if (!is_null($credentials) && !is_array($credentials))
+    {
+      $credentials = array($credentials);
+    }
+
+    return array('is_secure' => $secure, 'credentials' => $credentials);
+  }
+
+  /**
+   * Returns the security configuration for an action
+   *
+   * @param array  $security The security configuration
+   * @param string $action   The action name
+   * @param string $name     The name of the value to pull from security.yml
+   * @param mixed  $default  The default value to return if none is found in security.yml
+   *
+   * @return mixed
+   */
+  public function getSecurityValue($security, $action, $name, $default = null)
+  {
+    $actionName = strtolower($action);
+
+    if (isset($security[$actionName][$name]))
+    {
+      return $security[$actionName][$name];
+    }
+
+    if (isset($security['all'][$name]))
+    {
+      return $security['all'][$name];
+    }
+
+    return $default;
   }
 
   /**
