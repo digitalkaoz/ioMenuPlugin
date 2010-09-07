@@ -35,6 +35,13 @@ class ioMenuConfigHandler extends sfYamlConfigHandler
   private $context;
 
   /**
+   * security configuration
+   *
+   * @var array
+   */
+  protected $security;
+
+  /**
    * executes the config files
    *
    * @param array $configFiles
@@ -143,23 +150,17 @@ class ioMenuConfigHandler extends sfYamlConfigHandler
     $route_defaults = $route->getDefaults() ? $route->getDefaults() : $route->getDefaultParameters();
     $config = $this->context->getConfiguration();
 
-    $files = array(
-      $config->getRootDir().'/apps/'.$config->getApplication().'/config/security.yml',
-      $config->getRootDir().'/apps/'.$config->getApplication().'/modules/'.$route_defaults['module'].'/config/security.yml'
-    );
-
-    foreach($files as $k => $file)
+    if ($file = $config->getConfigCache()->checkConfig('modules/'.$route_defaults['module'].'/config/security.yml', true))
     {
-      if(!file_exists($file))
-      {
-        unset($files[$k]);
-      }
+      require $file;
     }
-    
-    $securityConfig = sfSecurityConfigHandler::getConfiguration($files);
+    else
+    {
+      $this->security = array();
+    }
 
-    $secure = $this->getSecurityValue($securityConfig, $route_defaults['action'], 'is_secure');
-    $credentials = $this->getSecurityValue($securityConfig, $route_defaults['action'], 'credentials');
+    $secure = $this->getSecurityValue($route_defaults['action'], 'is_secure');
+    $credentials = $this->getSecurityValue($route_defaults['action'], 'credentials');
     
     if (!is_null($credentials) && !is_array($credentials))
     {
@@ -172,25 +173,24 @@ class ioMenuConfigHandler extends sfYamlConfigHandler
   /**
    * Returns the security configuration for an action
    *
-   * @param array  $security The security configuration
    * @param string $action   The action name
    * @param string $name     The name of the value to pull from security.yml
    * @param mixed  $default  The default value to return if none is found in security.yml
    *
    * @return mixed
    */
-  public function getSecurityValue($security, $action, $name, $default = null)
+  public function getSecurityValue($action, $name, $default = null)
   {
     $actionName = strtolower($action);
 
-    if (isset($security[$actionName][$name]))
+    if (isset($this->security[$actionName][$name]))
     {
-      return $security[$actionName][$name];
+      return $this->security[$actionName][$name];
     }
 
-    if (isset($security['all'][$name]))
+    if (isset($this->security['all'][$name]))
     {
-      return $security['all'][$name];
+      return $this->security['all'][$name];
     }
 
     return $default;
