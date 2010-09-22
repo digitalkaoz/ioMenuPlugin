@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../bootstrap/functional.php';
 require_once $_SERVER['SYMFONY'].'/vendor/lime/lime.php';
 require_once sfConfig::get('sf_lib_dir').'/test/unitHelper.php';
 
-$t = new lime_test(183);
+$t = new lime_test(257);
 
 $timer = new sfTimer();
 // stub class used for testing
@@ -21,7 +21,7 @@ class ioMenuItemTest extends ioMenuItem
     $this->_userAccess = null;
   }
 }
-  
+
 $t->info('1 - Test basic getters, setters and constructor');
   $menu = new ioMenuItem('test menu', '@homepage', array('title' => 'my menu'));
 
@@ -104,6 +104,22 @@ $t->info('2 - Test the construction of trees');
   $t->is($pt1->getParent(), $menu, '->getParent() on pt1 returns rt.');
   $t->is($gc1->getParent(), $ch4, '->getParent() on gc1 returns ch4.');
 
+  // add whole menu to new root
+  $newRoot = new ioMenuItemTest("newRoot");
+  $newRoot->addChild($menu);
+
+  $t->is($menu->getLevel(), 1, '->getLevel() on the root menu item returns 1');
+  $t->is($pt1->getLevel(), 2, '->getLevel() on pt1 is 2');
+
+  $t->is($menu->getRoot(), $newRoot, '->getRoot() on rt returns new root.');
+  $t->is($pt1->getRoot(), $newRoot, '->getRoot() on pt1 returns new root.');
+  $t->is($menu->isRoot(), false, '->isRoot() returns false for rt');
+
+  $t->is($menu->getParent(), $newRoot, '->getParent() on rt returns new root.');
+
+  // remove menu from new root
+  $newRoot->removeChild($menu);
+
   //$t->is($gc1->getPathAsString(), 'Root li > pt2 > ch4 > gc1', 'Test getPathAsString() on gc1');
 
   // positional functions
@@ -114,9 +130,9 @@ $t->info('2 - Test the construction of trees');
   $t->is($pt2->isLast(), true, '->isLast() return true for pt2.');
   $t->is($ch4->isFirst(), true, '->isFirst() returns true for ch4.');
   $t->is($ch4->isLast(), true, '->isLast() returns true for ch4.');
-  $t->is($ch1->getNum(), 1, '->getNum() on ch1 is 1');
-  $t->is($ch2->getNum(), 2, '->getNum() on ch2 is 2');
-  $t->is($ch3->getNum(), 3, '->getNum() on ch3 is 3');
+  $t->is($ch1->getNum(), 0, '->getNum() on ch1 is 0');
+  $t->is($ch2->getNum(), 1, '->getNum() on ch2 is 1');
+  $t->is($ch3->getNum(), 2, '->getNum() on ch3 is 2');
 
   // array access
   $t->info('  2.3 - Test ArrayAccess interface');
@@ -222,8 +238,8 @@ $t->info('3 - Test child-related functionality.');
     $t->is(count($ch4), 2, 'count(ch4) now returns only 2 children.');
     $t->is($ch4->getChild('Grandchild 1')->isFirst(), true, '->isFirst() on gc1 correctly returns true.');
     $t->is($ch4->getChild('gc3')->isLast(), true, '->isLast() on gc3 now returns true');
-    $t->is($gc1->getNum(), 1, '->getNum() on gc1 returns 1');
-    $t->is($ch4->getChild('gc3')->getNum(), 2, '->getNum() on gc3 returns 2');
+    $t->is($gc1->getNum(), 0, '->getNum() on gc1 returns 0');
+    $t->is($ch4->getChild('gc3')->getNum(), 1, '->getNum() on gc3 returns 1');
 
   $t->info('    c) ch4 now has 2 children (gc1, gc3). Remove gc3.');
     $ch4->removeChild('gc3');
@@ -234,6 +250,26 @@ $t->info('3 - Test child-related functionality.');
   $t->info('    d) try to remove a non-existent child.');
     $ch4->removeChild('fake');
     $t->is(count($ch4), 1, '->removeChildren() with a non-existent child does nothing');
+
+  $t->info('  3.5 - Test updating child id after rename');
+  $pt1->setName("Temp name");
+  $t->is($menu->getChild("Temp name", false), $pt1, "pt1 can be found under new name");
+  $t->is(array_keys($menu->getChildren()), array('Temp name', 'Parent 2'), 'The children are still ordered correctly after a rename.');
+
+  $pt1->setName("Parent 1");
+  $t->is($menu->getChild("Parent 1", false), $pt1, "pt1 can be found again under old name");
+
+  $t->info('    Trying renaming Parent 1 to Parent 2 (which already is used by sibling), should throw an exception.');
+    try
+    {
+      $pt1->setName("Parent 2");
+      $t->fail('Exception not thrown.');
+    }
+    catch (sfException $e)
+    {
+      $t->pass('Exception thrown');
+    }
+
 
 $t->info('4 - Check the credentials and security functions.');
 
@@ -332,7 +368,7 @@ $t->info('5 - Check the "current" behavior.');
   $t->is($currentMenu['child']['grandchild']->isCurrent(), true, '->isCurrent() properly returns true on the grandchild menu item.');
   $t->is($currentMenu->isCurrentAncestor(), true, '->isCurrentAncestor() returns true on the root since its grandchild is current.');
   $t->is($currentMenu['child']->isCurrentAncestor(), true, '->isCurrentAncestor() returns true on the child since its child is current.');
-  
+
 
 $t->info('6 - Test the url, link, label rendering');
   check_test_tree($t, $menu);
@@ -436,6 +472,7 @@ $t->info('7 - Test some "intangible" functions (e.g. callRecursively()).');
   $t->info('    a) Test ->toArray() on pt2');
   $menu['Parent 2']->isCurrent(true);
   $menu['Parent 2']->setAttribute('class', 'parent2');
+  $menu['Parent 2']->setLinkOptions(array('class' => 'anchor_class'));
   $t->is($menu['Parent 2']->toArray(), array(
     'name'              => 'Parent 2',
     'label'             => null,
@@ -444,6 +481,7 @@ $t->info('7 - Test some "intangible" functions (e.g. callRecursively()).');
     'requires_auth'     => false,
     'requires_no_auth'  => false,
     'credentials'       => array(),
+    'link_options'      => array('class' => 'anchor_class'),
     'class'             => 'ioMenuItemTest',
     'children'          => array(
       'Child 4'           => array(
@@ -454,6 +492,7 @@ $t->info('7 - Test some "intangible" functions (e.g. callRecursively()).');
         'requires_auth'     => false,
         'requires_no_auth'  => false,
         'credentials'       => array(),
+        'link_options'      => array(),
         'class'             => 'ioMenuItemTest',
         'children'          => array(
           'Grandchild 1'      => array(
@@ -464,6 +503,7 @@ $t->info('7 - Test some "intangible" functions (e.g. callRecursively()).');
             'requires_auth'     => false,
             'requires_no_auth'  => false,
             'credentials'       => array(),
+            'link_options'      => array(),
             'class'             => 'ioMenuItemTest',
             'children'          => array(), // children exported even if empty, unless showChildren=false
           )
@@ -479,6 +519,7 @@ $t->info('7 - Test some "intangible" functions (e.g. callRecursively()).');
     'requires_auth'     => false,
     'requires_no_auth'  => false,
     'credentials'       => array(),
+    'link_options'      => array('class' => 'anchor_class'),
     'class'             => 'ioMenuItemTest',
   ), 'Test toArray() without children on pt2');
 
@@ -521,30 +562,31 @@ $t->info('8 - Test the render() method.');
   ioMenuItem::$renderCompressed = true;
 
   $t->info('  8.1 - Render the menu in a few basic ways');
-  $rendered = '<ul class="root"><li class="first"><span>Parent 1</span><ul class="menu_level_1"><li class="first"><span>Child 1</span></li><li><span>Child 2</span></li><li class="last"><span>Child 3</span></li></ul></li><li class="last"><span>Parent 2</span><ul class="menu_level_1"><li class="first last"><span>Child 4</span><ul class="menu_level_2"><li class="first last"><span>Grandchild 1</span></li></ul></li></ul></li></ul>';
+  $rendered = '<ul class="root"><li class="first">Parent 1<ul class="menu_level_1"><li class="first">Child 1</li><li>Child 2</li><li class="last">Child 3</li></ul></li><li class="last">Parent 2<ul class="menu_level_1"><li class="first last">Child 4<ul class="menu_level_2"><li class="first last">Grandchild 1</li></ul></li></ul></li></ul>';
   $t->is($menu->render(), $rendered, 'The full menu renders correctly.');
+  $t->is((string) $menu, $rendered, 'The __toString() method renders correctly.');
 
   $t->info('  8.2 - Set a title and class on pt2, and see that it renders.');
   $pt2->setAttribute('class', 'parent2_class');
   $pt2->setAttribute('title', 'parent2 title');
-  $rendered = '<ul class="root"><li class="first"><span>Parent 1</span><ul class="menu_level_1"><li class="first"><span>Child 1</span></li><li><span>Child 2</span></li><li class="last"><span>Child 3</span></li></ul></li><li class="parent2_class last" title="parent2 title"><span>Parent 2</span><ul class="menu_level_1"><li class="first last"><span>Child 4</span><ul class="menu_level_2"><li class="first last"><span>Grandchild 1</span></li></ul></li></ul></li></ul>';
+  $rendered = '<ul class="root"><li class="first">Parent 1<ul class="menu_level_1"><li class="first">Child 1</li><li>Child 2</li><li class="last">Child 3</li></ul></li><li class="parent2_class last" title="parent2 title">Parent 2<ul class="menu_level_1"><li class="first last">Child 4<ul class="menu_level_2"><li class="first last">Grandchild 1</li></ul></li></ul></li></ul>';
   $t->is($menu->render(), $rendered, 'The menu renders with the title and class attributes.');
 
   $t->info('  8.3 - Set ch2 menu as current, look for "current" and "current_ancestor" classes.');
   $ch2->isCurrent(true);
-  $rendered = '<ul class="root"><li class="current_ancestor first"><span>Parent 1</span><ul class="menu_level_1"><li class="first"><span>Child 1</span></li><li class="current"><span>Child 2</span></li><li class="last"><span>Child 3</span></li></ul></li><li class="parent2_class last" title="parent2 title"><span>Parent 2</span><ul class="menu_level_1"><li class="first last"><span>Child 4</span><ul class="menu_level_2"><li class="first last"><span>Grandchild 1</span></li></ul></li></ul></li></ul>';
+  $rendered = '<ul class="root"><li class="current_ancestor first">Parent 1<ul class="menu_level_1"><li class="first">Child 1</li><li class="current">Child 2</li><li class="last">Child 3</li></ul></li><li class="parent2_class last" title="parent2 title">Parent 2<ul class="menu_level_1"><li class="first last">Child 4<ul class="menu_level_2"><li class="first last">Grandchild 1</li></ul></li></ul></li></ul>';
   $t->is($menu->render(), $rendered, 'The menu renders with the current and current_ancestor classes.');
 
   $t->info('  8.4 - Make ch4 hidden due to not having proper credentials');
   $ch4->requiresAuth(true);
   $ch4->resetUserAccess();
-  $rendered = '<ul class="root"><li class="current_ancestor first"><span>Parent 1</span><ul class="menu_level_1"><li class="first"><span>Child 1</span></li><li class="current"><span>Child 2</span></li><li class="last"><span>Child 3</span></li></ul></li><li class="parent2_class last" title="parent2 title"><span>Parent 2</span></li></ul>';
+  $rendered = '<ul class="root"><li class="current_ancestor first">Parent 1<ul class="menu_level_1"><li class="first">Child 1</li><li class="current">Child 2</li><li class="last">Child 3</li></ul></li><li class="parent2_class last" title="parent2 title">Parent 2</li></ul>';
   $t->is($menu->render(), $rendered, 'The menu renders, but ch4 and children are not shown.');
   $ch4->requiresAuth(false); // fix ch4
   $ch4->resetUserAccess();
 
   $t->info('  8.5 - Only render a submenu portion.');
-  $rendered = '<ul class="parent2_class" title="parent2 title"><li class="first last"><span>Child 4</span><ul class="menu_level_2"><li class="first last"><span>Grandchild 1</span></li></ul></li></ul>';
+  $rendered = '<ul class="parent2_class" title="parent2 title"><li class="first last">Child 4<ul class="menu_level_2"><li class="first last">Grandchild 1</li></ul></li></ul>';
   $t->is($menu['Parent 2']->render(), $rendered, 'The pt2 menu renders as a ul with the correct classes and its children beneath.');
 
   $t->info('  8.6 - Test showChildren() functionality.');
@@ -554,32 +596,217 @@ $t->info('8 - Test the render() method.');
   $menu->showChildren(true); // replace the setting
 
   $menu['Parent 1']->showChildren(false);
-  $rendered = '<ul class="root"><li class="first"><span>Parent 1</span></li><li class="parent2_class last" title="parent2 title"><span>Parent 2</span><ul class="menu_level_1"><li class="first last"><span>Child 4</span><ul class="menu_level_2"><li class="first last"><span>Grandchild 1</span></li></ul></li></ul></li></ul>';
+  $rendered = '<ul class="root"><li class="first">Parent 1</li><li class="parent2_class last" title="parent2 title">Parent 2<ul class="menu_level_1"><li class="first last">Child 4<ul class="menu_level_2"><li class="first last">Grandchild 1</li></ul></li></ul></li></ul>';
   $t->is($menu->render(), $rendered, 'The menu is rendered, but pt1 hides its children. pt1 is also no longer a current ancestor.');
   $menu['Parent 1']->showChildren(true); // replace the setting
 
   $menu['Parent 1']->show(false);
-  $rendered = '<ul class="root"><li class="parent2_class first last" title="parent2 title"><span>Parent 2</span><ul class="menu_level_1"><li class="first last"><span>Child 4</span><ul class="menu_level_2"><li class="first last"><span>Grandchild 1</span></li></ul></li></ul></li></ul>';
+  $rendered = '<ul class="root"><li class="parent2_class first last" title="parent2 title">Parent 2<ul class="menu_level_1"><li class="first last">Child 4<ul class="menu_level_2"><li class="first last">Grandchild 1</li></ul></li></ul></li></ul>';
   $t->is($menu->render(), $rendered, 'The pt1 menu is hidden entirely, parent2 now gets the "first" class.');
   $menu['Parent 1']->show(true); // replace the setting
 
   $t->info('  8.7 - Test the depth argument on ->render()');
   $t->is($menu->render(0), '', '->render(0) returns an empty string.');
 
-  $rendered = '<ul class="root"><li class="first"><span>Parent 1</span></li><li class="parent2_class last" title="parent2 title"><span>Parent 2</span></li></ul>';
+  $rendered = '<ul class="root"><li class="first">Parent 1</li><li class="parent2_class last" title="parent2 title">Parent 2</li></ul>';
   $t->is($menu->render(1), $rendered, '->render(1) returns only the pt1 and pt2 elements');
 
-  $rendered = '<ul class="root"><li class="current_ancestor first"><span>Parent 1</span><ul class="menu_level_1"><li class="first"><span>Child 1</span></li><li class="current"><span>Child 2</span></li><li class="last"><span>Child 3</span></li></ul></li><li class="parent2_class last" title="parent2 title"><span>Parent 2</span><ul class="menu_level_1"><li class="first last"><span>Child 4</span></li></ul></li></ul>';
+  $rendered = '<ul class="root"><li class="current_ancestor first">Parent 1<ul class="menu_level_1"><li class="first">Child 1</li><li class="current">Child 2</li><li class="last">Child 3</li></ul></li><li class="parent2_class last" title="parent2 title">Parent 2<ul class="menu_level_1"><li class="first last">Child 4</li></ul></li></ul>';
   $t->is($menu->render(2), $rendered, '->render(2) returns down to the ch1-ch4 level.');
 
-  $rendered = '<ul class="root"><li class="current_ancestor first"><span>Parent 1</span><ul class="menu_level_1"><li class="first"><span>Child 1</span></li><li class="current"><span>Child 2</span></li><li class="last"><span>Child 3</span></li></ul></li><li class="parent2_class last" title="parent2 title"><span>Parent 2</span><ul class="menu_level_1"><li class="first last"><span>Child 4</span><ul class="menu_level_2"><li class="first last"><span>Grandchild 1</span></li></ul></li></ul></li></ul>';
+  $rendered = '<ul class="root"><li class="current_ancestor first">Parent 1<ul class="menu_level_1"><li class="first">Child 1</li><li class="current">Child 2</li><li class="last">Child 3</li></ul></li><li class="parent2_class last" title="parent2 title">Parent 2<ul class="menu_level_1"><li class="first last">Child 4<ul class="menu_level_2"><li class="first last">Grandchild 1</li></ul></li></ul></li></ul>';
   $t->is($menu->render(3), $rendered, '->render(3) returns the entire tree.');
 
   $t->info('    Use render(2) but set pt1\'s showChildren() to false.');
   $menu['Parent 1']->showChildren(false);
-  $rendered = '<ul class="root"><li class="first"><span>Parent 1</span></li><li class="parent2_class last" title="parent2 title"><span>Parent 2</span><ul class="menu_level_1"><li class="first last"><span>Child 4</span></li></ul></li></ul>';
+  $rendered = '<ul class="root"><li class="first">Parent 1</li><li class="parent2_class last" title="parent2 title">Parent 2<ul class="menu_level_1"><li class="first last">Child 4</li></ul></li></ul>';
   $t->is($menu->render(2), $rendered, 'Displays ch4 and not gc1 because depth = 2. Hides ch1-3 because showChildren() is false on pt1.');
 
+$t->info('9 - Test i18n functionaliy.');
+  $menu = new ioMenuItem('i18n');
+  $menu->addChild('admin');
+
+  $t->info('  9.1 - Test the setCulture() and getCulture() methods');
+    $context->getUser()->setCulture('es');
+    $t->is($menu->getCulture(), 'es', '->getCulture() returns the user default culture if none is set.');
+    $menu->setCulture('klingon');
+    $t->is($menu->getCulture(), 'klingon', '->getCulture() returns the culture that was explicitly set.');
+    $t->is($menu['admin']->getCulture(), 'klingon', '->getCulture() returns the parent menu items culture if not set.');
+    $menu['admin']->setCulture('mars');
+    $t->is($menu['admin']->getCulture(), 'mars', '->getCulture() returns the set culture, not the parent\'s culture.');
+
+  $t->info('  9.2 - Test the useI18n() and get/setLabel() methods');
+    $menu = new ioMenuItem('admin');
+    $context->getUser()->setCulture('en');
+    $t->is($menu->useI18n(), false, '->useI18n() returns false, there are no i18n labels set.');
+    $menu->setLabel('administración', 'es');
+    $t->is($menu->useI18n(), true, '->useI18n() returns true after an i18n label is set.');
+
+    $t->is($menu->getLabel('es'), 'administración', '->getLabel(es) correctly returns the spanish label I just set.');
+    $t->is($menu->getLabel(), 'admin', '->getLabel() still returns "admin", which is the name since no en label is set.');
+    $menu->setLabel('admin default');
+    $t->is($menu->getLabel(), 'admin default', '->getLabel() returns "admin default", the default label');
+    $menu->setLabel('administration', 'en');
+    $t->is($menu->getLabel(), 'administration', '->getLabel() returns "administration", the "en" culture label');
+
+    sfConfig::set('sf_default_culture', 'es');
+    $t->is($menu->getLabel('fake'), 'administración', '->getLabel() retrieves the sf_default_culture label if the given culture does not have a label.');
+
+    $menu->setCulture('es');
+    $t->is($menu->getLabel(), 'administración', '->getLabel() returns the label of the culture on the label');
+
+  $t->info('  9.3 - Test toArray() and fromArray()');
+    $arr = $menu->toArray();
+    $t->is($arr['i18n_labels'], array('es' => 'administración', 'en' => 'administration'), '->toArray() exports an i18n_labels array');
+
+    $newMenu = ioMenuItem::createFromArray($arr);
+    $arr = $newMenu->toArray();
+    $t->is($arr['i18n_labels'], array('es' => 'administración', 'en' => 'administration'), '->fromArray() correctly imports the i18n_labels');
+
+    $menu = new ioMenuItem('root');
+    $arr = $menu->toArray();
+    $t->is(isset($arr['i18n_labels']), false, 'If no i18n labels are set, the key is hidden entirely from ->toarray().');
+
+  $t->info('10 - Test item reordering.');
+    $menu = new ioMenuItem('root');
+    $menu->addChild('c1');
+    $menu->addChild('c2');
+    $menu->addChild('c3');
+    $menu->addChild('c4');
+
+    $menu['c3']->moveToFirstPosition();
+    $arr = array_keys($menu->getChildren());
+    $t->is($arr, array('c3', 'c1', 'c2', 'c4'), 'c3 moved to first position');
+
+    $menu['c2']->moveToLastPosition();
+    $arr = array_keys($menu->getChildren());
+    $t->is($arr, array('c3', 'c1', 'c4', 'c2'), 'c2 moved to last position');
+
+    $menu['c1']->moveToPosition(2);
+    $arr = array_keys($menu->getChildren());
+    $t->is($arr, array('c3', 'c4', 'c1', 'c2'), 'c1 moved to 3rd position');
+
+    $menu->reorderChildren(array('c4', 'c3', 'c2', 'c1'));
+    $arr = array_keys($menu->getChildren());
+    $t->is($arr, array('c4', 'c3', 'c2', 'c1'), 'reorder children');
+
+    $t->is($menu->render(), '<ul class="menu"><li class="first">c4</li><li>c3</li><li>c2</li><li class="last">c1</li></ul>', 'proper rendering after reorder');
+
+// create the tree and make the variables available
+extract(create_test_tree($t, 'ioMenuItemTest'));
+
+  $t->info('10 - Test copy');
+    check_test_tree($t, $menu);
+    print_test_tree($t); // print the test tree
+
+    $menu2 = $menu->copy();
+    $t->ok($menu2 !== $menu, 'menu2 is another instance then menu');
+    $t->ok($menu2['Parent 1'] !== $menu['Parent 1'], 'menu2->pt1 is another instance than menu->pt1');
+    $t->ok($menu2['Parent 1']['Child 2'] !== $menu['Parent 1']['Child 2'], 'menu2->pt1->ch2 is another instance than menu->pt1->ch2');
+
+    $t->ok($menu2['Parent 1']['Child 2']->getParent() === $menu2['Parent 1'], 'menu2->pt1->ch2->parent is same instance as menu2->pt1');
+    $t->ok($menu2['Parent 1']->getParent() === $menu2, 'menu2->pt1->parent is same instance as menu2');
+    //$t->ok($menu2['Parent 1']->getParent() !== $menu['Parent 1'], 'menu2->pt1->ch2->parent is same instance as menu->pt1');
+
+  $t->info('11 - Test slice');
+    $menu = new ioMenuItem('root');
+    $menu->addChild('c1');
+    $menu['c1']->addChild('gc1');
+    $menu['c1']->addChild('gc2');
+    $menu->addChild('c2');
+    $menu->addChild('c3');
+    $menu->addChild('c4');
+
+    $menu2 = $menu->slice(0, 3);
+    $t->is(array_keys($menu2->getChildren()), array('c1', 'c2', 'c3'), 'slice 0, 3');
+
+    $menu2 = $menu->slice(0, "c3");
+    $t->is(array_keys($menu2->getChildren()), array('c1', 'c2', 'c3'), 'slice 0, c3');
+
+    $menu2 = $menu->slice("c1", "c3");
+    $t->is(array_keys($menu2->getChildren()), array('c1', 'c2', 'c3'), 'slice c1, c3');
+
+    $menu2 = $menu->slice($menu['c1'], $menu['c3']);
+    $t->is(array_keys($menu2->getChildren()), array('c1', 'c2', 'c3'), 'slice c1, c3');
+
+    $menu2 = $menu->slice(1, 2);
+    $t->is(array_keys($menu2->getChildren()), array('c2', 'c3'), 'slice 1, 2');
+
+    $menu2 = $menu->slice(1, "c3");
+    $t->is(array_keys($menu2->getChildren()), array('c2', 'c3'), 'slice 1, c3');
+
+    $menu2 = $menu->slice("c2", "c3");
+    $t->is(array_keys($menu2->getChildren()), array('c2', 'c3'), 'slice c2, c3');
+
+    $menu2 = $menu->slice($menu['c2'], $menu['c3']);
+    $t->is(array_keys($menu2->getChildren()), array('c2', 'c3'), 'slice c2, c3');
+
+    $menu2 = $menu->slice(1);
+    $t->is(array_keys($menu2->getChildren()), array('c2', 'c3', 'c4'), 'slice 1');
+
+    $menu2 = $menu->slice(-3);
+    $t->is(array_keys($menu2->getChildren()), array('c2', 'c3', 'c4'), 'slice -3');
+
+    $menu2 = $menu->slice("c2");
+    $t->is(array_keys($menu2->getChildren()), array('c2', 'c3', 'c4'), 'slice c2');
+
+    $menu2 = $menu->slice($menu['c2']);
+    $t->is(array_keys($menu2->getChildren()), array('c2', 'c3', 'c4'), 'slice c2');
+
+    $menu2 = $menu->slice($menu['c2'], 1);
+    $t->is(array_keys($menu2->getChildren()), array('c2'), 'slice c2, 1');
+
+    $menu2 = $menu->slice($menu['c2'], -2);
+    $t->is(array_keys($menu2->getChildren()), array('c2'), 'slice c2, -3');
+
+    $menu2 = $menu->slice("c2", "c2");
+    $t->is(array_keys($menu2->getChildren()), array('c2'), 'slice c2, c2');
+
+    $menu2 = $menu->slice(4);
+    $t->is(array_keys($menu2->getChildren()), array(), 'slice 4');
+
+    $menu2 = $menu->slice("c5");
+    $t->is(array_keys($menu2->getChildren()), array(), 'slice c5');
+
+    $menu2 = $menu->slice(0, 5);
+    $t->is(array_keys($menu2->getChildren()), array('c1', 'c2', 'c3', 'c4'), 'slice 0, 5');
+
+    $menu2 = $menu->slice("c1", "c5");
+    $t->is(array_keys($menu2->getChildren()), array('c1', 'c2', 'c3', 'c4'), 'slice c1, c5');
+
+    $menu2 = $menu->slice(0, 2);
+    $t->is($menu2->render(), '<ul class="menu"><li class="first">c1<ul class="menu_level_1"><li class="first">gc1</li><li class="last">gc2</li></ul></li><li class="last">c2</li></ul>', 'proper rendering after slice');
+
+  $t->info('12 - Test split');
+    extract($menu->split(1));
+    $t->is(array(array_keys($primary->getChildren()), array_keys($secondary->getChildren())), array(array('c1'), array('c2', 'c3', 'c4')), 'split 1');
+
+    extract($menu->split("c1"));
+    $t->is(array(array_keys($primary->getChildren()), array_keys($secondary->getChildren())), array(array('c1'), array('c2', 'c3', 'c4')), 'split c1');
+
+    extract($menu->split(2));
+    $t->is(array(array_keys($primary->getChildren()), array_keys($secondary->getChildren())), array(array('c1', 'c2'), array('c3', 'c4')), 'split 2');
+
+    extract($menu->split("c2"));
+    $t->is(array(array_keys($primary->getChildren()), array_keys($secondary->getChildren())), array(array('c1', 'c2'), array('c3', 'c4')), 'split c2');
+
+    extract($menu->split(4));
+    $t->is(array(array_keys($primary->getChildren()), array_keys($secondary->getChildren())), array(array('c1', 'c2', 'c3', 'c4'), array()), 'split 4');
+
+    extract($menu->split("c4"));
+    $t->is(array(array_keys($primary->getChildren()), array_keys($secondary->getChildren())), array(array('c1', 'c2', 'c3', 'c4'), array()), 'split c4');
+
+    extract($menu->split(5));
+    $t->is(array(array_keys($primary->getChildren()), array_keys($secondary->getChildren())), array(array('c1', 'c2', 'c3', 'c4'), array()), 'split 5');
+
+    extract($menu->split("c5"));
+    $t->is(array(array_keys($primary->getChildren()), array_keys($secondary->getChildren())), array(array('c1', 'c2', 'c3', 'c4'), array()), 'split c5');
+
+    extract($menu->split(2));
+    $t->ok($primary['c1']->getParent() !== $secondary['c3']->getParent(), 'primary->c1 and secondary->c3 have two distinct fathers');
+
+    $t->is($primary->render(), '<ul class="menu"><li class="first">c1<ul class="menu_level_1"><li class="first">gc1</li><li class="last">gc2</li></ul></li><li class="last">c2</li></ul>', 'proper rendering of primary after slice');
+    $t->is($secondary->render(), '<ul class="menu"><li class="first">c3</li><li class="last">c4</li></ul>', 'proper rendering of secondary after slice');
 
 // used for benchmarking
 $timer->addTime();

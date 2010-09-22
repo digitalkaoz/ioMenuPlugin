@@ -14,33 +14,9 @@ A plugin to make menus easier to write in symfony.
 Inspired by [sympal](http://www.sympalphp.org) and the
 [SemanticMenu](http://github.com/danielharan/semantic-menu) from Ruby on Rails.
 
-Installation
-------------
-
-### With git
-
-    git submodule add git://github.com/weaverryan/ioMenuPlugin.git plugins/ioMenuPlugin
-    git submodule init
-    git submodule update
-
-### With subversion
-
-    svn propedit svn:externals plugins
-
-In the editor that's displayed, add the following entry and then save
-
-    ioMenuPlugin https://svn.github.com/weaverryan/ioMenuPlugin.git
-
-Finally, update:
-
-    svn up
-
-# Setup
-
-In your `config/ProjectConfiguration.class.php` file, make sure you have
-the plugin enabled.
-
-    $this->enablePlugins('ioMenuPlugin');
+A small book has been written to support this plugin and
+[ioDoctrineMenuItemPlugin](http://github.com/weaverryan/ioDoctrineMenuPlugin):
+[Menu Reference Manual](http://github.com/weaverryan/ioMenuPlugin/tree/master/docs/). 
 
 Usage
 -----
@@ -172,6 +148,39 @@ TODO
   - add more tests to the config cache
   - cascading of attributes
 
+Installation
+------------
+
+### With git
+
+    git submodule add git://github.com/weaverryan/ioMenuPlugin.git plugins/ioMenuPlugin
+    git submodule init
+    git submodule update
+
+### With subversion
+
+    svn propedit svn:externals plugins
+
+In the editor that's displayed, add the following entry and then save
+
+    ioMenuPlugin https://svn.github.com/weaverryan/ioMenuPlugin.git
+
+Finally, update:
+
+    svn up
+
+# Setup
+
+In your `config/ProjectConfiguration.class.php` file, make sure you have
+the plugin enabled.
+
+    $this->enablePlugins('ioMenuPlugin');
+
+In-depth documentation
+----------------------
+
+An in-depth reference manual is available:
+[Menu Reference Manual](http://github.com/weaverryan/ioMenuPlugin/tree/master/docs/).
 
 Care to Contribute?
 -------------------
