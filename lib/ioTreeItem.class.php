@@ -98,10 +98,18 @@ class ioTreeItem implements ArrayAccess, Countable, IteratorAggregate
   /**
    * Add a child item to this tree
    *
-   * @param mixed   $child    An ioTreeItem object
+   * @param mixed   $child    An ioTreeItem object or the name of a new item to create
+   *
+   * @return ioTreeItem The child tree item
    */
-  public function appendChild(ioTreeItem $child)
+  public function addChild($child)
   {
+    if (!$child instanceof ioTreeItem)
+    {
+      $class = get_class();
+      $child = new $class($child);
+    }
+
     if ($child->getParent())
     {
       throw new sfException('Cannot add item as child, it already belongs to another tree (e.g. has a parent).');
@@ -112,6 +120,8 @@ class ioTreeItem implements ArrayAccess, Countable, IteratorAggregate
     $child->setNum($this->count());
 
     $this->_children[$child->getName()] = $child;
+
+    return $child;
   }
 
   /**
@@ -120,7 +130,7 @@ class ioTreeItem implements ArrayAccess, Countable, IteratorAggregate
    * @param  string $name  Then name of the child item to return
    * @return ioTreeItem|null
    */
-  public function getChild($name, $create = true)
+  public function getChild($name)
   {
     return isset($this->_children[$name]) ? $this->_children[$name] : null;
   }

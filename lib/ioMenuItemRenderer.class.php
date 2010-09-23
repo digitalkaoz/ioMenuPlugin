@@ -8,7 +8,7 @@
  * 
  * @package     ioMenuPluginer
  * @subpackage  renderer
- * @author      g21michal
+ * @author      Michał Górny <g21.michal@gmail.com>
  * @author      Ryan Weaver <ryan.weaver@iostudio.com>
  * @copyright   Iostudio, LLC 2010
  * @since       2010-07-21

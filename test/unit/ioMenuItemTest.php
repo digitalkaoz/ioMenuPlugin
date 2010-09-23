@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/../bootstrap/functional.php';
 require_once $_SERVER['SYMFONY'].'/vendor/lime/lime.php';
 require_once sfConfig::get('sf_lib_dir').'/test/unitHelper.php';
 
-$t = new lime_test(253);
+$t = new lime_test(251);
 
 $timer = new sfTimer();
 // stub class used for testing
@@ -203,9 +203,7 @@ $t->info('3 - Test child-related functionality.');
 
   $t->info('  3.4 - Test ->getChild()');
   $t->is($ch4->getChild('Grandchild 1'), $gc1, '->getChild(Grandchild 1) returns gc1.');
-  $t->is($ch4->getChild('gc4')->getName(), 'gc4', '->getChild() on a non-existent menu (gc4) creates a new child');
-  $t->is(count($ch4), 4, 'count(ch4) now returns 4, reflecting this new child.');
-  $t->is($ch4->getChild('nonexistent', false), null, '->getChild() on a non-existent menu passing false as the 2nd argument returns null without creating a new child.');
+  $t->is($ch4->getChild('nonexistent'), null, '->getChild() on a non-existent menu returns null.');
 
   $t->info('  3.5 - Test ->removeChildren()');
   $t->info('    a) ch4 now has 4 children (gc1, gc2, gc3, gc4). Remove gc4.');

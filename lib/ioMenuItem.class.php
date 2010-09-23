@@ -457,26 +457,6 @@ class ioMenuItem extends ioTreeItem
   }
 
   /**
-   * Returns the child menu identified by the given name
-   *
-   * If the child menu doesn't exist and $create is true, it will
-   * automatically be created
-   *
-   * @param  string $name  Then name of the child menu to return
-   * @param  boolean $create Whether or not to create the child if it does not exist
-   * @return ioMenuItem|null
-   */
-  public function getChild($name, $create = true)
-  {
-    if (parent::getChild($name) == null && $create)
-    {
-      $this->addChild($name);
-    }
-
-    return parent::getChild($name);
-  }
-
-  /**
    * Returns whether or not the given/current user has permission to
    * view this current menu item.
    *
