@@ -403,7 +403,7 @@ class ioMenuItem extends ioTreeItem
       $child = $this->_createChild($child, $route, $attributes, $class);
     }
 
-    parent::appendChild($child);
+    parent::addChild($child);
 
     $child->setTree($this->getTree(), true);
 
