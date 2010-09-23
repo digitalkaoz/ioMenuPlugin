@@ -18,7 +18,8 @@ class ioMenuConfigHandler extends sfYamlConfigHandler
    *
    * @var string
    */
-  private $buffer = "<?php\n";
+  private $buffer = "<?php\n
+return array(\n";
 
   /**
    * holds the menu instances
@@ -49,7 +50,6 @@ class ioMenuConfigHandler extends sfYamlConfigHandler
   public function execute($configFiles)
   {
     $config = $this->parseYamls($configFiles);
-    //$config = sfYaml::load($configFiles);
     
     $this->setContext();
 
@@ -78,6 +78,7 @@ class ioMenuConfigHandler extends sfYamlConfigHandler
     {
       $this->parseMenu($config, 'menu');
     }
+    $this->buffer .= ");\n";
   }
 
   /**
@@ -97,7 +98,7 @@ class ioMenuConfigHandler extends sfYamlConfigHandler
 
     array_walk($menu['children'], array($this,'parseItem'));
 
-    $this->buffer .= '$'.$name.' = '.var_export($menu,true).';';
+    $this->buffer .= sprintf("// menu '%1\$s'\n '%1\$s' => %2\$s,\n", $name, var_export($menu, true));
   }
 
   /**
@@ -114,7 +115,6 @@ class ioMenuConfigHandler extends sfYamlConfigHandler
   {
     if(isset($data['route']))
     {
-      //inject security.yml here
       $this->setSecuritySettingsForItem($data);
     }
 
@@ -224,7 +224,7 @@ class ioMenuConfigHandler extends sfYamlConfigHandler
       
       if(strpos($routeName, '?'))
       {
-        $routeName = substr($routeName, 0, strpos($routeName, '?') ? strpos($routeName, '?') : strlen($routeName));
+        $routeName = substr($routeName, 0, strpos($routeName, '?'));
       }
 
       $routes = $routing->getRoutes();
