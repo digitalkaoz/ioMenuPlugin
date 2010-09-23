@@ -296,7 +296,7 @@ class ioMenuItem extends ioTreeItem
    */
   public function setAttributes($attributes)
   {
-    $this->_attributes= $attributes;
+    $this->_attributes = $attributes;
 
     return $this;
   }
@@ -449,7 +449,7 @@ class ioMenuItem extends ioTreeItem
       $child = $this->_createChild($child, $route, $attributes, $class);
     }
 
-    parent::addChild($child);
+    parent::appendChild($child);
 
     $child->setCurrentUri($this->getCurrentUri());
 

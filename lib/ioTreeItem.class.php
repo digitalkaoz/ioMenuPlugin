@@ -100,7 +100,7 @@ class ioTreeItem implements ArrayAccess, Countable, IteratorAggregate
    *
    * @param mixed   $child    An ioTreeItem object
    */
-  public function addChild(ioTreeItem $child)
+  public function appendChild(ioTreeItem $child)
   {
     if ($child->getParent())
     {
