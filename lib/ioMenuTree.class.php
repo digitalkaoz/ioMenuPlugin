@@ -147,16 +147,7 @@ class ioMenuTree
    */
   protected function findCurrentItem(ioMenuItem $item)
   {
-    $url = $this->getCurrentUri();
-    $itemUrl = $item->getUri(array('absolute' => true));
-
-    // a very dirty hack so homepages will match with or without the trailing slash
-    if ($item->getRoute() == '@homepage' && substr($url, -1) != '/')
-    {
-      $itemUrl = substr($itemUrl, 0, strlen($itemUrl) - 1);
-    }
-
-    if ($itemUrl == $url)
+    if ($item->matchUrl($this->getCurrentUri()))
     {
       return $item;
     }

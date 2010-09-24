@@ -150,6 +150,25 @@ class ioMenuItem extends ioTreeItem
   }
 
   /**
+   * Check wether the item url matches the given url
+   * @param string $url The url to test
+   * @return boolean Wether the item url matches the given url
+   */
+  public function matchUrl($url)
+  {
+    $itemUrl = $this->getUri(array('absolute' => true));
+    $route = $this->getRoute();
+
+    // a very dirty hack so homepages will match with or without the trailing slash
+    if (($route == 'homepage' || $route == '@homepage') && substr($url, -1) != '/')
+    {
+      $itemUrl = substr($itemUrl, 0, strlen($itemUrl) - 1);
+    }
+
+    return $itemUrl === $url;
+  }
+
+  /**
    * @return string
    */
   public function getRoute()
