@@ -23,6 +23,7 @@ class ioMenuTree
   protected
     $_renderer            = null,    // renderer which is used to render menu items
     $_currentUri          = null,    // the current uri to use for selecting current menu
+    $_currentRoute        = null,    // the current route to use for selecting current menu
     $_currentItem         = null,    // current item
     $_culture             = null;    // the culture to use when rendering menu tree
 
@@ -94,7 +95,7 @@ class ioMenuTree
   {
     if ($this->_currentUri === null)
     {
-        $this->setCurrentUri(sfContext::getInstance()->getRequest()->getUri());
+      $this->setCurrentUri(sfContext::getInstance()->getRequest()->getUri());
     }
 
     return $this->_currentUri;
@@ -108,6 +109,34 @@ class ioMenuTree
   public function setCurrentUri($uri)
   {
     $this->_currentUri = $uri;
+  }
+
+  /**
+   * Returns the current route, which is used for determining the current
+   * menu item.
+   *
+   * If the uri isn't set, its taken it from the request object.
+   *
+   * @return string
+   */
+  public function getCurrentRoute()
+  {
+    if ($this->_currentRoute == null)
+    {
+      $this->setCurrentRoute(sfContext::getInstance()->getRouting()->getCurrentRouteName());
+    }
+
+    return $this->_currentRoute;
+  }
+
+  /**
+   * Sets the current route, used when determining the current menu item
+   *
+   * @return void
+   */
+  public function setCurrentRoute($route)
+  {
+    $this->_currentRoute = $route;
   }
 
   /**
@@ -147,7 +176,7 @@ class ioMenuTree
    */
   protected function findCurrentItem(ioMenuItem $item)
   {
-    if ($item->matchUrl($this->getCurrentUri()))
+    if ($item->matchCurrentLocation($this))
     {
       return $item;
     }

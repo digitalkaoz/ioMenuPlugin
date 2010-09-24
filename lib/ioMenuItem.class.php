@@ -29,6 +29,7 @@ class ioMenuItem extends ioTreeItem
     $_attributes       = array(), // an array of attributes for the li
     $_requiresAuth     = null,    // boolean to require auth to show this menu
     $_requiresNoAuth   = null,    // boolean to require NO auth to show this menu
+    $_matchBy          = null,    // wether to match by url or route ('url' / 'route')
     $_credentials      = array(); // array of credentials needed to display this menu
 
   /**
@@ -150,22 +151,30 @@ class ioMenuItem extends ioTreeItem
   }
 
   /**
-   * Check wether the item url matches the given url
-   * @param string $url The url to test
+   * Check wether the item is the current item
+   * 
+   * @param ioMenuTree $tree The menu tree
    * @return boolean Wether the item url matches the given url
    */
-  public function matchUrl($url)
+  public function matchCurrentLocation(ioMenuTree $tree)
   {
-    $itemUrl = $this->getUri(array('absolute' => true));
-    $route = $this->getRoute();
-
-    // a very dirty hack so homepages will match with or without the trailing slash
-    if (($route == 'homepage' || $route == '@homepage') && substr($url, -1) != '/')
+    switch ($this->getMatchBy())
     {
-      $itemUrl = substr($itemUrl, 0, strlen($itemUrl) - 1);
-    }
+      case 'url':
+        $url = $tree->getCurrentUri();
+        $itemUrl = $this->getUri(array('absolute' => true));
+        $route = $this->getRoute();
 
-    return $itemUrl === $url;
+        // a very dirty hack so homepages will match with or without the trailing slash
+        if (($route == 'homepage' || $route == '@homepage') && substr($url, -1) != '/')
+        {
+          $itemUrl = substr($itemUrl, 0, strlen($itemUrl) - 1);
+        }
+
+        return $itemUrl === $url;
+      case 'route':
+        return preg_replace('/^@/', '', $this->getRoute()) === $tree->getCurrentRoute();
+    }
   }
 
   /**
@@ -186,6 +195,39 @@ class ioMenuItem extends ioTreeItem
   public function setRoute($route)
   {
     $this->_route = $route;
+
+    return $this;
+  }
+
+  /**
+   * @return string
+   */
+  public function getMatchBy()
+  {
+    $match = 'url';
+
+    $obj = $this;
+    do {
+      if (!is_null($obj->_matchBy))
+      {
+        $match  = $obj->_matchBy;
+        break;
+      }
+      $obj =  $obj->getParent ();
+    } while ($obj);
+
+    return $match;
+  }
+
+  /**
+   * Sets the matching method for a menu item
+   *
+   * @param  string $matchBy Wether to match by 'route' or 'url'
+   * @return ioMenuItem
+   */
+  public function setMatchBy($matchBy)
+  {
+    $this->_matchBy = $matchBy;
 
     return $this;
   }
@@ -888,6 +930,7 @@ class ioMenuItem extends ioTreeItem
       '_requiresNoAuth' => 'requires_no_auth',
       '_credentials'    => 'credentials',
       '_linkOptions'    => 'link_options',
+      '_matchBy'        => 'macth_by'
     );
 
     // output the i18n labels if any are set
@@ -970,6 +1013,11 @@ class ioMenuItem extends ioTreeItem
     if (isset($array['link_options']))
     {
       $this->setLinkOptions($array['link_options']);
+    }
+
+    if (isset($array['match_by']))
+    {
+      $this->setMatchBy($array['match_by']);
     }
 
     if (isset($array['children']))
