@@ -1083,4 +1083,58 @@ class ioMenuItem extends ioTreeItem
 
     return $event->getReturnValue();
   }
+  
+  /**
+   * trys to find a node in the current tree
+   * 
+   * @param string $name
+   * @param mixed $root
+   * @return ioMenuItem 
+   */
+  public function findNode($name,$root = null)
+  {
+    if(!$root)
+    {
+      $root = $this->getRoot();
+    }
+    
+    $node = $this->scanForNodeRecursivly($root, $name);
+
+    if($node)
+    {
+      return $node;
+    }
+    else
+    {
+      throw new Exception('Menu Item not found, anchor was "'.$name.'"!');
+    }
+  }
+
+  /**
+   * scans the tree downwards from a node and trys to find a node by name
+   * 
+   * @param ioMenuItem $node
+   * @param string $name
+   * @return ioMenuItem 
+   */
+  protected function scanForNodeRecursivly(ioMenuItem $node, $name)
+  {
+    foreach((array) $node->getChildren() as $item)
+    {
+      if($item->getName() == $name)
+      {
+        return $item;
+      }
+      
+      if(count($item->getChildren()))
+      {
+        $child = $this->scanForNodeRecursivly($item, $name);
+        
+        if($child)
+        {
+          return $child;
+        }
+      }
+    }
+  }
 }
