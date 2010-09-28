@@ -1,2 +1,3 @@
 config/navigation.yml:
   class: ioMenuConfigHandler
+  file:  %SF_PLUGINS_DIR%/ioMenuPlugin/lib/config/ioMenuConfigHandler.class.php
