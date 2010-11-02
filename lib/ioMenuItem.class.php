@@ -790,7 +790,13 @@ class ioMenuItem extends ioTreeItem
    */
   public function isCurrent()
   {
-      return $this === $this->getTree()->getCurrentItem();
+    if($this === $this->getTree()->getCurrentItem())
+      return true;
+
+    if($this->checkForCurrentModule())
+      return true;
+
+    return false;
   }
 
   /**
@@ -1137,4 +1143,29 @@ class ioMenuItem extends ioTreeItem
       }
     }
   }
+  
+  /**
+   * check if the current site is within the current module
+   * @return boolean 
+   */
+  protected function checkForCurrentModule()
+  {
+    $routes = sfContext::getInstance()->getRouting()->getRoutes();
+    $currentRoute = str_replace('@', '', sfContext::getInstance()->getRouting()->getCurrentInternalUri(true));
+    $route = str_replace('@', '', $this->getRoute());
+    $currentRoute = strpos($currentRoute, '?') ? substr($currentRoute, 0, strpos($currentRoute,'?')) : $currentRoute;
+
+    if(isset($routes[$route]) && isset($routes[$currentRoute]))
+    {
+      $currentDefaults = $routes[$currentRoute]->getDefaults();
+      $routeDefaults = $routes[$route]->getDefaults();
+
+      if(isset($currentDefaults['module']) && $currentDefaults['module'] == $routeDefaults['module'])
+      {
+        return true;
+      }
+    }
+
+    return false;
+  }  
 }
