@@ -458,10 +458,11 @@ $t->info('7 - Test some "intangible" functions (e.g. callRecursively()).');
     'label'             => null,
     'route'             => null,
     'attributes'        => array('class' => 'parent2'),
-    'requires_auth'     => false,
-    'requires_no_auth'  => false,
+    'requires_auth'     => null,
+    'requires_no_auth'  => null,
     'credentials'       => array(),
     'link_options'      => array('class' => 'anchor_class'),
+    'match_by'          => NULL,
     'class'             => 'ioMenuItemTest',
     'children'          => array(
       'Child 4'           => array(
@@ -469,10 +470,11 @@ $t->info('7 - Test some "intangible" functions (e.g. callRecursively()).');
         'label'             => null,
         'route'             => null,
         'attributes'        => array(),
-        'requires_auth'     => false,
-        'requires_no_auth'  => false,
+        'requires_auth'     => null,
+        'requires_no_auth'  => null,
         'credentials'       => array(),
         'link_options'      => array(),
+        'match_by'          => NULL,
         'class'             => 'ioMenuItemTest',
         'children'          => array(
           'Grandchild 1'      => array(
@@ -480,10 +482,11 @@ $t->info('7 - Test some "intangible" functions (e.g. callRecursively()).');
             'label'             => null,
             'route'             => null,
             'attributes'        => array(),
-            'requires_auth'     => false,
-            'requires_no_auth'  => false,
+            'requires_auth'     => null,
+            'requires_no_auth'  => null,
             'credentials'       => array(),
             'link_options'      => array(),
+            'match_by'          => NULL,
             'class'             => 'ioMenuItemTest',
             'children'          => array(), // children exported even if empty, unless showChildren=false
           )
@@ -496,10 +499,11 @@ $t->info('7 - Test some "intangible" functions (e.g. callRecursively()).');
     'label'             => null,
     'route'             => null,
     'attributes'        => array('class' => 'parent2'),
-    'requires_auth'     => false,
-    'requires_no_auth'  => false,
+    'requires_auth'     => null,
+    'requires_no_auth'  => null,
     'credentials'       => array(),
     'link_options'      => array('class' => 'anchor_class'),
+    'match_by'          => NULL,
     'class'             => 'ioMenuItemTest',
   ), 'Test toArray() without children on pt2');
 

@@ -936,7 +936,7 @@ class ioMenuItem extends ioTreeItem
       '_requiresNoAuth' => 'requires_no_auth',
       '_credentials'    => 'credentials',
       '_linkOptions'    => 'link_options',
-      '_matchBy'        => 'macth_by'
+      '_matchBy'        => 'match_by'
     );
 
     // output the i18n labels if any are set
