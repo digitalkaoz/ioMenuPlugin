@@ -1160,9 +1160,17 @@ class ioMenuItem extends ioTreeItem
       $currentDefaults = $routes[$currentRoute]->getDefaults();
       $routeDefaults = $routes[$route]->getDefaults();
 
-      if(isset($currentDefaults['module']) && $currentDefaults['module'] == $routeDefaults['module'])
+      if($this->hasChildren())
       {
-        return true;
+        if(isset($currentDefaults['module']) && $currentDefaults['module'] == $routeDefaults['module'])
+        {
+          return true;
+        }
+      }else{
+        if ($currentRoute == $route && isset($currentDefaults['module']) && $currentDefaults['module'] == $routeDefaults['module'])
+        {
+          return true;
+        }
       }
     }
 
