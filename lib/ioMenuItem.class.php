@@ -204,7 +204,7 @@ class ioMenuItem extends ioTreeItem
    */
   public function getMatchBy()
   {
-    $match = 'url';
+    $match = 'route';
 
     $obj = $this;
     do {
