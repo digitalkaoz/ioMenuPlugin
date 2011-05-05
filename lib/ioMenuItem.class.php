@@ -790,11 +790,26 @@ class ioMenuItem extends ioTreeItem
    */
   public function isCurrent()
   {
-    if($this === $this->getTree()->getCurrentItem())
-      return true;
+    $currentUri = $this->getTree()->getCurrentUri();
+    $external = preg_match('/^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,6}(\/.*)?$/i', $currentUri);
+    
+    if($external){
+      $this->setMatchBy('url');
+    }
 
-    if($this->checkForCurrentModule())
+    if($this === $this->getTree()->getCurrentItem()){
+      if($external){
+        $this->setMatchBy('route');
+      }
       return true;
+    }
+
+    if($this->checkForCurrentModule()){
+      if($external){
+        $this->setMatchBy('route');
+      }
+      return true;
+    }
 
     return false;
   }
