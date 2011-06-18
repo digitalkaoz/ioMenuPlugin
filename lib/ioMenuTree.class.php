@@ -95,7 +95,8 @@ class ioMenuTree
   {
     if ($this->_currentUri === null)
     {
-      $this->setCurrentUri(sfContext::getInstance()->getRequest()->getUri());
+      $uri = explode('?', sfContext::getInstance()->getRequest()->getUri());
+      $this->setCurrentUri($uri[0]);
     }
 
     return $this->_currentUri;
